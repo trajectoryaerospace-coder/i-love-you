@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>I love you sm bro</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --accent-left: #ec4899;
+      --accent-right: #3b82f6;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100vh;
+      height: -webkit-fill-available;
+      background-color: var(--bg-color);
+      overflow: hidden;
+    }
+
+    body {
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+    }
+
+    /* Split Layout Grid */
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    .column.left {
+      background: linear-gradient(180deg, rgba(236, 72, 153, 0.04) 0%, transparent 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .column.right {
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.04) 0%, transparent 100%);
+    }
+
+    /* Header Panel */
+    .info-panel {
+      text-align: center;
+      z-index: 10;
+      margin-top: 30px;
+      padding: 0 10px;
+      width: 100%;
+    }
+
+    h2 {
+      margin: 0 0 5px 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .left h2 { color: var(--accent-left); text-shadow: 0 0 15px rgba(236, 72, 153, 0.3); }
+    .right h2 { color: var(--accent-right); text-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+
+    .counter {
+      display: inline-block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* Target Systems */
+    .target-container {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 150px;
+      z-index: 5;
+    }
+
+    .target-heart {
+      font-size: 3.5rem;
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
+      display: inline-block;
+    }
+
+    /* Chat Bubble Positioned exactly 70px ABOVE the center target heart */
+    .chat-bubble {
+      position: absolute;
+      bottom: calc(50% + 70px);
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: white;
+      color: #0f172a;
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      width: 85%;
+      max-width: 150px;
+      text-align: center;
+      word-wrap: break-word;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      z-index: 50;
+      animation: popBubble 4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .chat-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 6px 0;
+      border-style: solid;
+      border-color: white transparent;
+      display: block;
+      width: 0;
+    }
+
+    /* Interactive Interface Actions Setup */
+    .button-container {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 85%;
+      z-index: 10;
+    }
+
+    .click-btn {
+      width: 100%;
+      padding: 18px 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      transition: transform 0.05s ease, opacity 0.3s ease;
+      outline: none;
+    }
+
+    .left .click-btn { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .right .click-btn { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .click-btn:active { transform: scale(0.92); }
+    
+    .click-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    /* Floating Chat Button Overlay Trigger */
+    .chat-trigger-btn {
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      background: #334155;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    /* Custom Modal Popup Styles - NO blur background, lowered position */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.9); 
+      display: flex; 
+      justify-content: center; 
+      align-items: flex-end; 
+      z-index: 1000;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1; pointer-events: auto;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 30px 24px;
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+      margin-bottom: 50px; 
+      transform: translateY(50px) scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-content h3 {
+      font-size: 1.3rem; margin-bottom: 10px; color: #f8fafc;
+    }
+
+    .modal-content p {
+      font-size: 0.9rem; color: #94a3b8; margin-bottom: 20px; line-height: 1.4;
+    }
+
+    .modal-input {
+      width: 100%; padding: 14px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; color: white; font-size: 1rem; text-align: center; outline: none;
+      margin-bottom: 15px;
+    }
+
+    .modal-btn {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 1rem;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Particle Animations Engine */
+    .floating-heart {
+      position: absolute;
+      font-size: 1.8rem;
+      pointer-events: none;
+      z-index: 8;
+      animation: shootUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    .burst-particle {
+      position: absolute;
+      font-size: 1.8rem;
+      pointer-events: none;
+      z-index: 9;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: burstOut var(--duration) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+
+    @keyframes popBubble {
+      0% { transform: translateX(-50%) scale(0); opacity: 0; }
+      4% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+      6% { transform: translateX(-50%) scale(1); }
+      90% { transform: translateX(-50%) scale(1); opacity: 1; }
+      100% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+    }
+
+    @keyframes shootUp {
+      0% { bottom: 100px; opacity: 1; transform: translateX(-50%) scale(0.4) rotate(0deg); }
+      85% { opacity: 1; }
+      100% {
+        bottom: calc(70vh - 100px);
+        opacity: 0;
+        transform: translateX(var(--drift, -50%)) scale(1.3) rotate(var(--spin, 0deg));
+      }
+    }
+
+    @keyframes burstOut {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+      15% { opacity: 1; }
+      100% {
+        transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(var(--final-scale, 1.5)) rotate(var(--rot));
+        opacity: 0;
+      }
+    }
+
+    @keyframes megaExplodePulse {
+      0% { transform: scale(var(--curr-scale)); filter: brightness(1.5) saturate(1.5); }
+      20% { transform: scale(4.2); filter: brightness(2.5) saturate(2) drop-shadow(0 0 30px #ff0077); }
+      40% { transform: scale(0.6); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); filter: brightness(1) saturate(1); }
+    }
+
+    .ultra-exploding {
+      animation: megaExplodePulse 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.5) forwards !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-content">
+      <h3>Who are you?</h3>
+      <p>Type <b>z</b> for Zanieke to unlock her side, or type <b>a</b> for Ayushman to unlock his side.</p>
+      <input type="text" class="modal-input" id="identity-input" placeholder="Enter key (z or a)" autocomplete="off">
+      <button class="modal-btn" id="login-submit-btn">Enter App</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="chat-modal">
+    <div class="modal-content">
+      <h3>Broadcast Message</h3>
+      <p>Type your message below to float it on screen.</p>
+      <input type="text" class="modal-input" id="chat-msg-input" placeholder="Type message..." maxlength="35" autocomplete="off">
+      <button class="modal-btn" id="chat-submit-btn">Send Message</button>
+    </div>
+  </div>
+
+  <div class="chat-trigger-btn" id="chat-launcher">💬</div>
+
+  <div class="column left" id="col-zanieke">
+    <div class="info-panel">
+      <h2>Zanieke</h2>
+      <div class="counter" id="left-counter">❤️ Clicks: 0</div>
+    </div>
+    <div class="target-container" id="target-container-zanieeke">
+      <div class="target-heart" id="left-heart">❤️</div>
+    </div>
+    <div class="button-container">
+      <button class="click-btn" id="left-btn">Click Zanieke</button>
+    </div>
+  </div>
+
+  <div class="column right" id="col-ayushman">
+    <div class="info-panel">
+      <h2>Ayushman</h2>
+      <div class="counter" id="right-counter">❤️ Clicks: 0</div>
+    </div>
+    <div class="target-container" id="target-container-ayushman">
+      <div class="target-heart" id="right-heart">❤️</div>
+    </div>
+    <div class="button-container">
+      <button class="click-btn" id="right-btn">Click Ayushman</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, runTransaction, serverTimestamp, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAacqhBAd6WygN12jTkMgzXL47bLZ1iYI",
+      authDomain: "geoguessrwithchat.firebaseapp.com",
+      projectId: "geoguessrwithchat",
+      storageBucket: "geoguessrwithchat.firebasestorage.app",
+      messagingSenderId: "767264209473",
+      appId: "1:767264209473:web:b65c9665be5e15a4c964c0",
+      databaseURL: "https://geoguessrwithchat-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let userRole = ""; 
+
+    // DOM Elements Mapping
+    const loginModal = document.getElementById('login-modal');
+    const loginInput = document.getElementById('identity-input');
+    const loginSubmitBtn = document.getElementById('login-submit-btn');
+    const chatModal = document.getElementById('chat-modal');
+    const chatMsgInput = document.getElementById('chat-msg-input');
+    const chatSubmitBtn = document.getElementById('chat-submit-btn');
+
+    const leftBtn = document.getElementById('left-btn');
+    const rightBtn = document.getElementById('right-btn');
+    const leftCounter = document.getElementById('left-counter');
+    const rightCounter = document.getElementById('right-counter');
+    const leftHeart = document.getElementById('left-heart');
+    const rightHeart = document.getElementById('right-heart');
+    const colLeft = document.getElementById('col-zanieke');
+    const colRight = document.getElementById('col-ayushman');
+    const targetContainerZanieeke = document.getElementById('target-container-zanieeke');
+    const targetContainerAyushman = document.getElementById('target-container-ayushman');
+    const chatLauncher = document.getElementById('chat-launcher');
+
+    // Setup role configurations based on a code string
+    function applyIdentityRole(roleString) {
+      if (roleString === 'zanieke') {
+        userRole = "zanieke";
+        rightBtn.disabled = true;
+      } else if (roleString === 'ayushman') {
+        userRole = "ayushman";
+        leftBtn.disabled = true;
+      } else {
+        userRole = "";
+        leftBtn.disabled = true;
+        rightBtn.disabled = true;
+      }
+    }
+
+    // Single-Login Gate Checking Pipeline via localStorage
+    const savedIdentity = localStorage.getItem('user_assigned_identity');
+    if (savedIdentity) {
+      applyIdentityRole(savedIdentity);
+    } else {
+      loginModal.classList.add('active');
+    }
+
+    loginSubmitBtn.addEventListener('click', () => {
+      const inputName = loginInput.value.trim().toLowerCase();
+      let structuralRole = "";
+
+      if (inputName === 'z' || inputName === 'zanieke') {
+        structuralRole = "zanieke";
+      } else if (inputName === 'a' || inputName === 'ayushman') {
+        structuralRole = "ayushman";
+      } else {
+        structuralRole = "spectator";
+      }
+
+      localStorage.setItem('user_assigned_identity', structuralRole);
+      applyIdentityRole(structuralRole);
+      loginModal.classList.remove('active');
+    });
+
+    // Node Sync Pointers Map
+    const leftClicksRef = ref(db, 'clicks/zanieke');
+    const rightClicksRef = ref(db, 'clicks/ayushman');
+    const leftStreamRef = query(ref(db, 'streams/zanieke'), limitToLast(1));
+    const rightStreamRef = query(ref(db, 'streams/ayushman'), limitToLast(1));
+
+    const shootingHearts = ['❤️', '💖', '💝', '💓', '💘'];
+    const burstEmojis = ['🥰', '😍', '💕', '🔥', '🎉', '🌟', '✨', '👑', '💥', '🚀', '⚡', '🌈', '💝', '💘', '💮'];
+
+    // --- Clicks Data Event Pipeline Sync ---
+    onValue(leftClicksRef, (snapshot) => {
+      const data = snapshot.val() || 0;
+      leftCounter.innerText = `Clicks: ${data}`;
+      updateHeartScale(leftHeart, data);
+    });
+
+    onValue(rightClicksRef, (snapshot) => {
+      const data = snapshot.val() || 0;
+      rightCounter.innerText = `Clicks: ${data}`;
+      updateHeartScale(rightHeart, data);
+    });
+
+    // --- Trail Particle Sync Line Listener ---
+    let initialLoadLeft = true;
+    onValue(leftStreamRef, (snapshot) => {
+      if (initialLoadLeft) { initialLoadLeft = false; return; }
+      if (snapshot.exists()) createTrailParticle(colLeft);
+    });
+
+    let initialLoadRight = true;
+    onValue(rightStreamRef, (snapshot) => {
+      if (initialLoadRight) { initialLoadRight = false; return; }
+      if (snapshot.exists()) createTrailParticle(colRight);
+    });
+
+    // --- Realtime Chat Messaging Integration Bridge ---
+    let chatInitialized = false;
+    onChildAdded(ref(db, 'networkChat'), (snapshot) => {
+      if (!chatInitialized) return; 
+      const msgData = snapshot.val();
+      if(msgData) {
+        displayGlobalBubble(msgData.sender, msgData.message);
+      }
+    });
+    onValue(query(ref(db, 'networkChat'), limitToLast(1)), () => { chatInitialized = true; }, { onlyOnce: true });
+
+    // --- UI Control Trigger Subsystems ---
+    chatLauncher.addEventListener('click', () => {
+      if(!userRole) return; 
+      chatModal.classList.add('active');
+      chatMsgInput.focus();
+    });
+
+    chatSubmitBtn.addEventListener('click', () => {
+      const txt = chatMsgInput.value.trim();
+      if (txt.length > 0) {
+        push(ref(db, 'networkChat'), {
+          sender: userRole,
+          message: txt,
+          timestamp: serverTimestamp()
+        });
+        chatMsgInput.value = "";
+        chatModal.classList.remove('active');
+      }
+    });
+
+    chatModal.addEventListener('click', (e) => {
+      if (e.target === chatModal) chatModal.classList.remove('active');
+    });
+
+    // Native Action Touch Handlers
+    leftBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault(); if (leftBtn.disabled) return;
+      runTransaction(leftClicksRef, (val) => (val || 0) + 1);
+      push(ref(db, 'streams/zanieke'), { ts: serverTimestamp() });
+    });
+    rightBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault(); if (rightBtn.disabled) return;
+      runTransaction(rightClicksRef, (val) => (val || 0) + 1);
+      push(ref(db, 'streams/ayushman'), { ts: serverTimestamp() });
+    });
+
+    // Standard click fallback bindings
+    leftBtn.addEventListener('click', () => {
+      if (leftBtn.disabled) return;
+      runTransaction(leftClicksRef, (val) => (val || 0) + 1);
+      push(ref(db, 'streams/zanieke'), { ts: serverTimestamp() });
+    });
+    rightBtn.addEventListener('click', () => {
+      if (rightBtn.disabled) return;
+      runTransaction(rightClicksRef, (val) => (val || 0) + 1);
+      push(ref(db, 'streams/ayushman'), { ts: serverTimestamp() });
+    });
+
+    // --- Visual FX and Particle Engines ---
+    function updateHeartScale(heartEl, totalClicks) {
+      let clickStage = totalClicks % 100;
+      
+      if (clickStage === 0 && totalClicks > 0) {
+        let preExplodeScale = 1 + (99 * 0.025);
+        heartEl.style.setProperty('--curr-scale', preExplodeScale);
+        
+        heartEl.classList.add('ultra-exploding');
+        createDramaticExplosion(heartEl);
+
+        setTimeout(() => {
+          heartEl.classList.remove('ultra-exploding');
+          heartEl.style.transform = `scale(1)`;
+        }, 700);
+      } else {
+        let newScale = 1 + (clickStage * 0.025);
+        heartEl.style.transform = `scale(${newScale})`;
+      }
+    }
+
+    function createTrailParticle(parentColumn) {
+      const particle = document.createElement('div');
+      particle.classList.add('floating-heart');
+      particle.innerText = shootingHearts[Math.floor(Math.random() * shootingHearts.length)];
+      
+      const horizontalDrift = (Math.random() * 50 - 25) - 50; 
+      const spinRotation = Math.random() * 360;
+      
+      particle.style.left = '50%';
+      particle.style.setProperty('--drift', `${horizontalDrift}%`);
+      particle.style.setProperty('--spin', `${spinRotation}deg`);
+
+      parentColumn.appendChild(particle);
+      particle.addEventListener('animationend', () => particle.remove());
+    }
+
+    function createDramaticExplosion(targetHeartEl) {
+      const container = targetHeartEl.parentElement;
+      const layerCounts = [30, 25]; 
+      
+      layerCounts.forEach((count, layerIndex) => {
+        for (let i = 0; i < count; i++) {
+          const burstNode = document.createElement('div');
+          burstNode.classList.add('burst-particle');
+          burstNode.innerText = burstEmojis[Math.floor(Math.random() * burstEmojis.length)];
+          
+          const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.4);
+          const velocityDistance = (layerIndex === 0) ? (140 + Math.random() * 180) : (60 + Math.random() * 90);
+          
+          const destinationX = Math.cos(angle) * velocityDistance;
+          const destinationY = Math.sin(angle) * velocityDistance;
+          const randomRotation = Math.random() * 1080 - 540;
+          const durationSpeed = 0.4 + (Math.random() * 0.4) + (layerIndex * 0.1);
+          const customFinalScale = 1.2 + Math.random() * 1.5;
+
+          burstNode.style.setProperty('--x', `${destinationX}px`);
+          burstNode.style.setProperty('--y', `${destinationY}px`);
+          burstNode.style.setProperty('--rot', `${randomRotation}deg`);
+          burstNode.style.setProperty('--duration', `${durationSpeed}s`);
+          burstNode.style.setProperty('--final-scale', customFinalScale);
+
+          container.appendChild(burstNode);
+          burstNode.addEventListener('animationend', () => burstNode.remove());
+        }
+      });
+    }
+
+    // Displays chat bubbles exactly 70px above the center target heart
+    function displayGlobalBubble(sender, text) {
+      const existingBubbles = document.querySelectorAll('.chat-bubble');
+      existingBubbles.forEach(b => b.remove());
+
+      const targetContainer = (sender === "zanieke") ? targetContainerZanieeke : targetContainerAyushman;
+      
+      const bubble = document.createElement('div');
+      bubble.classList.add('chat-bubble');
+      bubble.innerText = text;
+
+      targetContainer.appendChild(bubble);
+    }
+  </script>
+</body>
+</html>
